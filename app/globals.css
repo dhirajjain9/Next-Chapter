@@ -85,6 +85,10 @@ header.app{position:sticky;top:0;z-index:30;background:rgba(241,242,238,.92);bac
 .empty .cta{margin-top:14px;padding:14px;background:var(--accent-soft);border-radius:11px;color:var(--accent-ink);font-size:13px;line-height:1.5;text-align:left}
 .empty .cta button{margin-top:10px;width:100%;padding:11px 14px;border:none;border-radius:10px;background:var(--accent);color:#fff;font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit}
 .empty .cta button:disabled{opacity:.6;cursor:default}
+.researchbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 12px;padding:12px 14px;background:var(--accent-soft);border:1px solid var(--accent);border-radius:11px;color:var(--accent-ink);font-size:13px;line-height:1.45}
+.researchbar span{flex:1;min-width:160px}
+.researchbar button{flex:none;padding:10px 16px;border:none;border-radius:10px;background:var(--accent);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap}
+.researchbar button:disabled{opacity:.6;cursor:default}
 .more{margin:14px auto 0;display:block;padding:11px 22px;border:1px solid var(--line-2);background:var(--surface);border-radius:11px;font-size:13px;font-weight:600;color:var(--accent-ink);cursor:pointer;font-family:inherit}
 
 .ov{position:fixed;inset:0;z-index:50;background:rgba(20,27,23,.5);backdrop-filter:blur(3px);display:none;align-items:flex-end;justify-content:center}

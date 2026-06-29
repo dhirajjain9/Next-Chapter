@@ -253,6 +253,18 @@ function render() {
     if (rb) rb.addEventListener("click", () => doResearch(q));
     return;
   }
+  // When there's a search query, always offer to research it as a new prospect —
+  // even if the term partially matched existing rows (so the action is never hidden).
+  if (q) {
+    const bar = document.createElement("div");
+    bar.className = "researchbar";
+    bar.innerHTML =
+      `<span>Not the right <b>${esc(q)}</b>? Research it live against the 4 hard filters.</span>` +
+      `<button id="research-btn"${researching ? " disabled" : ""}>${researching ? '<span class="spin"></span>Researching…' : "Research as new prospect"}</button>`;
+    list.appendChild(bar);
+    const rb = bar.querySelector("#research-btn");
+    if (rb) rb.addEventListener("click", () => doResearch(q));
+  }
   const frag = document.createDocumentFragment();
   results.slice(0, shown).forEach((w) =>
     frag.appendChild(w.t === "u" ? uniCard(w.r) : candCard(w.r, w.t)),
