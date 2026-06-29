@@ -162,7 +162,7 @@
 <header class="app">
   <div class="head-inner">
     <div class="brand">
-      <div class="mark">Chapter Home<span class="dot">.</span></div>
+      <div class="mark">The Next Chapter<span class="dot">.</span></div>
       <div class="sub">Acquisition Pipeline</div>
     </div>
     <div class="meta">
@@ -177,7 +177,7 @@
   <div class="tabs" id="tabs" role="tablist">
     <button class="tab" role="tab" data-view="live" aria-selected="true">Live pipeline<span class="c" id="t-live"></span></button>
     <button class="tab" role="tab" data-view="universe" aria-selected="false">Full universe<span class="c" id="t-uni"></span></button>
-    <button class="tab" role="tab" data-view="candidates" aria-selected="false">Net-new<span class="c" id="t-cand"></span></button>
+    <button class="tab" role="tab" data-view="candidates" aria-selected="false">Suggestions by Claude<span class="c" id="t-cand"></span></button>
   </div>
 
   <div class="controls">
@@ -200,7 +200,7 @@
 
   <div class="foot">
     <b>Hard filters:</b> profitable · bootstrapped · founder-led · independent (not part of a conglomerate).
-    Funnel mirrors the CH Universe tracker; net-new candidates are researched from public sources and de-duped against the universe — financials marked “unknown” are unverified and need an MCA/Tofler pull before outreach. Reference deal: Hokipo (~₹83 Cr FY25 rev, bootstrapped).
+    Funnel mirrors the CH Universe tracker (blank + to-contact statuses shown as <b>Pipeline</b>); <b>Suggestions by Claude</b> are researched from public sources and de-duped against the universe — financials marked “unknown” are unverified and need an MCA/Tofler pull before outreach. Reference deal: Hokipo (~₹83 Cr FY25 rev, bootstrapped).
   </div>
 </div>
 
@@ -226,17 +226,18 @@
   var DATA = JSON.parse(document.getElementById("data").textContent);
   var UNI = DATA.universe, CAND = DATA.candidates;
   var UPDATED = "29 Jun 2026";
+  // Blank/uncategorized statuses count as actionable Pipeline (same as To-Contact)
+  UNI.forEach(function(r){ if(!r.s || r.s==="Uncategorized") r.s="To-Contact"; });
 
   // ---- stage config ----
   var STAGES = [
     {k:"Onboarded",       lbl:"Onboarded",   cls:"s-onboarded", col:"var(--accent)"},
     {k:"In-Conversation", lbl:"In conv.",    cls:"s-inconv",    col:"var(--brass)"},
-    {k:"To-Contact",      lbl:"To contact",  cls:"s-tocontact", col:"var(--slate)"},
+    {k:"To-Contact",      lbl:"Pipeline",    cls:"s-tocontact", col:"var(--slate)"},
     {k:"Reached-NoResponse",lbl:"Reached",   cls:"s-reached",   col:"#9aa29a"},
     {k:"Rejected-Promoter",lbl:"Promoter no",cls:"s-rejected",  col:"var(--brick)"},
     {k:"Rejected-CH",     lbl:"CH passed",   cls:"s-rejected",  col:"#b8786c"},
-    {k:"Screened-Out",    lbl:"Screened out",cls:"s-screened",  col:"#c2c6bd"},
-    {k:"Uncategorized",   lbl:"Uncategorized",cls:"s-screened", col:"#c2c6bd"}
+    {k:"Screened-Out",    lbl:"Screened out",cls:"s-screened",  col:"#c2c6bd"}
   ];
   var SMAP={}; STAGES.forEach(function(s){SMAP[s.k]=s;});
   var LIVE=["Onboarded","In-Conversation","To-Contact","Reached-NoResponse"];
@@ -386,7 +387,7 @@
   function render(){
     compute();
     document.getElementById("count").textContent=results.length.toLocaleString("en-IN");
-    document.getElementById("count-lbl").textContent= view==="candidates"?"net-new candidates":(results.length===1?"company":"companies");
+    document.getElementById("count-lbl").textContent= view==="candidates"?"suggestions by Claude":(results.length===1?"company":"companies");
     document.getElementById("sortnote").textContent= view==="candidates"?"sorted by fit verdict":"sorted by funnel stage";
     if(shown===0) shown=Math.min(PAGE,results.length); else shown=Math.min(shown,results.length);
     if(shown===0)shown=Math.min(PAGE,results.length);
@@ -464,7 +465,7 @@
   }
   function openCand(r){
     var v=verdictClass(r.v);
-    document.getElementById("sh-kicker").textContent=r.p+" · net-new";
+    document.getElementById("sh-kicker").textContent=r.p+" · suggestion by Claude";
     document.getElementById("sh-name").textContent=r.n;
     document.getElementById("sh-pills").innerHTML=
       '<span class="badge" style="background:'+v.col+';color:#fff">'+esc(r.v||"—")+'</span>'+
