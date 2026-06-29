@@ -1,17 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="10" fill="#ffffff"/>
-  <g transform="rotate(-3 32 32)" fill="none" stroke="#111111" stroke-width="1.6" stroke-linecap="round">
-    <!-- top edge, gap on the right (matches the broken hand-drawn frame) -->
-    <path d="M12 13 H44"/>
-    <path d="M52 14 L52 27"/>
-    <!-- left edge -->
-    <path d="M11 14 L11 44"/>
-    <!-- bottom edge, gap on the right -->
-    <path d="M12 51 H40"/>
-    <path d="M51 33 L51 48"/>
-  </g>
-  <g fill="#111111" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif">
-    <text x="32" y="29" font-size="8" letter-spacing="1.5">THE NEXT</text>
-    <text x="32" y="43" font-size="13" letter-spacing="0.5">CHAPTER</text>
-  </g>
+  <rect width="64" height="64" rx="10" fill="#f4efe6"/>
+  <text x="32" y="33" text-anchor="middle" dominant-baseline="central"
+        font-family="Georgia, 'Times New Roman', serif" font-weight="700"
+        font-size="38" letter-spacing="-2" fill="#6e2433">CH</text>
 </svg>
