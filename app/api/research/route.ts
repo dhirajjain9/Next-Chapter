@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { researchCompany } from "@/lib/research";
 
 export const runtime = "nodejs";
-export const maxDuration = 300; // research + web search can run long
+export const maxDuration = 60; // Vercel Hobby cap; research route is tuned to fit
 
 export async function POST(req: NextRequest) {
   if (!process.env.ANTHROPIC_API_KEY) {

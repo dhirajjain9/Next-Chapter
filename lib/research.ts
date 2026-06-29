@@ -62,14 +62,20 @@ export async function researchCompany(company: string): Promise<Prospect> {
 
   let text = "";
   // Server-tool loop: web search runs server-side; resume on pause_turn.
-  for (let i = 0; i < 4; i++) {
-    const resp = await client.messages.create({
+  // Tuned to finish inside Vercel Hobby's 60s function cap: low effort, capped
+  // search rounds, compact output, at most one resume.
+  for (let i = 0; i < 2; i++) {
+    // Extra fields (output_config, web-search max_uses) aren't in this SDK
+    // version's types yet, so build the request loosely.
+    const params: any = {
       model: "claude-opus-4-8",
-      max_tokens: 8000,
+      max_tokens: 2500,
       system: SYSTEM,
-      tools: [{ type: "web_search_20260209", name: "web_search" } as never],
+      output_config: { effort: "low" },
+      tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 5 }],
       messages,
-    });
+    };
+    const resp = (await client.messages.create(params)) as Anthropic.Message;
     text = resp.content
       .filter((b): b is Anthropic.TextBlock => b.type === "text")
       .map((b) => b.text)
