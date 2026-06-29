@@ -174,9 +174,9 @@
 
 <div class="wrap">
   <div class="tabs" id="tabs" role="tablist">
-    <button class="tab" role="tab" data-view="live" aria-selected="true">Funnel<span class="c" id="t-live"></span></button>
-    <button class="tab" role="tab" data-view="universe" aria-selected="false">Full universe<span class="c" id="t-uni"></span></button>
-    <button class="tab" role="tab" data-view="candidates" aria-selected="false">Suggestions by Claude<span class="c" id="t-cand"></span></button>
+    <button class="tab" role="tab" data-view="universe" aria-selected="true">Full universe<span class="c" id="t-uni"></span></button>
+    <button class="tab" role="tab" data-view="sugpipe" aria-selected="false">Suggestions + Pipeline<span class="c" id="t-sp"></span></button>
+    <button class="tab" role="tab" data-view="pipeline" aria-selected="false">Just Pipeline<span class="c" id="t-pipe"></span></button>
   </div>
 
   <div class="controls">
@@ -264,7 +264,7 @@
   }
 
   // ---- state ----
-  var view="live", q="", pillar=null, stage=null, shown=0, PAGE=60, results=[];
+  var view="universe", q="", pillar=null, stage=null, shown=0, PAGE=60, results=[];
 
   // ---- counts ----
   var stageCounts={}; UNI.forEach(function(r){stageCounts[r.s]=(stageCounts[r.s]||0)+1;});
@@ -272,9 +272,10 @@
   document.getElementById("m-total").textContent=UNI.length.toLocaleString("en-IN");
   document.getElementById("m-live").textContent=liveCount;
   document.getElementById("m-date").textContent="updated "+UPDATED;
-  document.getElementById("t-live").textContent=liveCount+" co.";
+  var pipelineCount=stageCounts["To-Contact"]||0;
   document.getElementById("t-uni").textContent=UNI.length.toLocaleString("en-IN")+" co.";
-  document.getElementById("t-cand").textContent=CAND.length+" co.";
+  document.getElementById("t-sp").textContent=(CAND.length+pipelineCount)+" co.";
+  document.getElementById("t-pipe").textContent=pipelineCount+" co.";
 
   // ---- funnel strip ----
   var funnelEl=document.getElementById("funnel");
@@ -282,7 +283,7 @@
     var b=document.createElement("button");
     b.className="stat"; b.style.borderColor="var(--brass)";
     b.innerHTML='<span class="num tnum">'+CAND.length+'</span><span class="lab">Suggestions</span><span class="stripe" style="background:var(--brass)"></span>';
-    b.addEventListener("click",function(){setView("candidates");window.scrollTo({top:document.querySelector(".controls").offsetTop-70,behavior:"smooth"});});
+    b.addEventListener("click",function(){setView("sugpipe");window.scrollTo({top:document.querySelector(".controls").offsetTop-70,behavior:"smooth"});});
     funnelEl.appendChild(b);
   })();
   STAGES.forEach(function(s){
@@ -292,9 +293,8 @@
     b.dataset.stage=s.k;
     b.innerHTML='<span class="num tnum">'+n+'</span><span class="lab">'+s.lbl+'</span><span class="stripe" style="background:'+s.col+'"></span>';
     b.addEventListener("click",function(){
-      if(view==="candidates"){setView("universe");}
-      stage = (stage===s.k? null : s.k);
-      syncStageChips(); render();
+      if(s.k==="To-Contact"){ setView("pipeline"); }
+      else { setView("universe"); stage=s.k; syncStageChips(); render(); }
       window.scrollTo({top:document.querySelector(".controls").offsetTop-70,behavior:"smooth"});
     });
     funnelEl.appendChild(b);
@@ -310,7 +310,9 @@
     all.addEventListener("click",function(){pillar=null;buildPillars();render();});
     pillarEl.appendChild(all);
     PILLARS.forEach(function(p){
-      var src = view==="candidates"? CAND : UNI;
+      var src = view==="universe"? UNI
+              : view==="pipeline"? UNI.filter(function(r){return r.s==="To-Contact";})
+              : CAND.concat(UNI.filter(function(r){return r.s==="To-Contact";}));
       var n=src.filter(function(r){return r.p===p.k;}).length;
       if(!n) return;
       var c=document.createElement("button");
@@ -327,9 +329,9 @@
   var stageEl=document.getElementById("stages");
   function buildStageChips(){
     stageEl.innerHTML="";
-    if(view==="candidates"){stageEl.style.display="none";return;}
+    if(view!=="universe"){stageEl.style.display="none";return;}
     stageEl.style.display="flex";
-    var pool = view==="live"? LIVE : STAGES.map(function(s){return s.k;});
+    var pool = STAGES.map(function(s){return s.k;});
     var all=document.createElement("button");
     all.className="chip";all.setAttribute("aria-pressed",stage===null);all.textContent="All stages";
     all.addEventListener("click",function(){stage=null;syncStageChips();render();});
@@ -380,16 +382,20 @@
   var STORDER={}; STAGES.forEach(function(s,i){STORDER[s.k]=i;});
   function vrank(v){v=(v||"").toLowerCase();if(v.indexOf("strong")>-1&&v.indexOf("weak")<0)return 0;if(v.indexOf("medium")>-1&&v.indexOf("weak")<0)return 1;return 2;}
 
+  function pipePool(){return UNI.filter(function(r){return r.s==="To-Contact"&&matchUni(r);});}
   function compute(){
-    if(view==="candidates"){
-      results=CAND.filter(matchCand).slice().sort(function(a,b){
+    if(view==="sugpipe"){
+      var c=CAND.filter(matchCand).slice().sort(function(a,b){
         var d=vrank(a.v)-vrank(b.v); if(d)return d; return a.n.localeCompare(b.n);
-      });
-    }else{
-      var pool = view==="live"? UNI.filter(function(r){return LIVE.indexOf(r.s)>-1;}) : UNI;
-      results=pool.filter(matchUni).slice().sort(function(a,b){
+      }).map(function(r){return {t:"c",r:r};});
+      var p=pipePool().sort(function(a,b){return a.n.localeCompare(b.n);}).map(function(r){return {t:"u",r:r};});
+      results=c.concat(p);
+    } else if(view==="pipeline"){
+      results=pipePool().sort(function(a,b){return a.n.localeCompare(b.n);}).map(function(r){return {t:"u",r:r};});
+    } else {
+      results=UNI.filter(matchUni).slice().sort(function(a,b){
         var d=(STORDER[a.s]||9)-(STORDER[b.s]||9); if(d)return d; return a.n.localeCompare(b.n);
-      });
+      }).map(function(r){return {t:"u",r:r};});
     }
   }
 
@@ -398,8 +404,8 @@
   function render(){
     compute();
     document.getElementById("count").textContent=results.length.toLocaleString("en-IN");
-    document.getElementById("count-lbl").textContent= view==="candidates"?"suggestions by Claude":(results.length===1?"company":"companies");
-    document.getElementById("sortnote").textContent= view==="candidates"?"sorted by fit verdict":"sorted by funnel stage";
+    document.getElementById("count-lbl").textContent= view==="sugpipe"?"suggestions + pipeline":view==="pipeline"?"in pipeline":(results.length===1?"company":"companies");
+    document.getElementById("sortnote").textContent= view==="sugpipe"?"suggestions first, then pipeline":view==="pipeline"?"sorted by name":"sorted by funnel stage";
     if(shown===0) shown=Math.min(PAGE,results.length); else shown=Math.min(shown,results.length);
     if(shown===0)shown=Math.min(PAGE,results.length);
     listEl.innerHTML="";
@@ -409,7 +415,7 @@
     }
     var frag=document.createDocumentFragment();
     var slice=results.slice(0,shown);
-    slice.forEach(function(r,i){frag.appendChild(view==="candidates"?candCard(r,i):uniCard(r,i));});
+    slice.forEach(function(w,i){frag.appendChild(w.t==="c"?candCard(w.r,i):uniCard(w.r,i));});
     listEl.appendChild(frag);
     moreEl.style.display= shown<results.length? "block":"none";
     moreEl.textContent="Show more ("+(results.length-shown)+" left)";
