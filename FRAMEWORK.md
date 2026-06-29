@@ -37,27 +37,25 @@ Single source of truth: **`data/ch_universe.csv`** (column `stage`).
 `scripts/build_views.py` regenerates `PIPELINE.md` from it.
 
 ```
-Screened-Out ─┐
-              │   (passes 4 gates + worth a conversation)
-              ▼
-          To-Contact ──► Reached-NoResponse ──► In-Conversation ──► Onboarded
-                                                      │
-                                  ┌───────────────────┴───────────────────┐
-                                  ▼                                        ▼
-                            Rejected-CH                            Rejected-Promoter
-                       (we passed: fit/scale/                 (they passed: valuation/
-                        profitability/founder)                 model/not selling)
+ SOURCED                                                          ┌─► On hold ─┐
+ (Suggestions by Claude /                                         │            │
+  ingested / self-researched)  ─►  Pipeline ─►  Reached out ─►  In conversation ─►  Onboarded
+                                                                 │            │
+                                                                 ├─► Rejected (CH) 
+                                                                 └─► Rejected (Promoter)
 ```
 
-| Stage | Meaning | Exit criteria |
-|-------|---------|---------------|
-| `Screened-Out` | In universe but not pursued (too small, established, fails a gate) | — terminal unless re-qualified |
-| `To-Contact` | Passes gates, shortlisted, outreach not yet done | First contact made |
-| `Reached-NoResponse` | Outreach sent, awaiting reply | Reply received → In-Conversation |
-| `In-Conversation` | Active two-way dialogue | LOI / onboard, or rejection |
-| `Onboarded` | Acquired / integrated | — |
+| Stage | Meaning | Moves forward when |
+|-------|---------|--------------------|
+| **Sourced** | A new lead — a Claude suggestion (`data/candidates_new.csv`), an ingested dataset, or self-researched | Passes the 4 gates + worth pursuing → Pipeline |
+| `To-Contact` → **Pipeline** | Shortlisted, outreach not yet done (blank statuses also count here) | First contact made → Reached out |
+| `Reached-NoResponse` → **Reached out** | Outreach sent, awaiting reply | Reply received → In conversation |
+| `In-Conversation` | Active two-way dialogue | LOI / onboard, on-hold, or rejection |
+| `On-Hold` | Paused — revisit later | Resume → In conversation, or → Rejected |
+| `Onboarded` | Acquired / integrated | — (success terminal) |
 | `Rejected-CH` | We declined (see `rejection_reason`) | — |
 | `Rejected-Promoter` | Promoter declined (see `rejection_reason`) | — |
+| `Screened-Out` | Reviewed earlier, not shortlisted | — (re-qualify to re-enter) |
 
 ### Rejection taxonomy (use these exact values in `rejection_reason`)
 - **CH-side:** `Product fit`, `Low profitability`, `Low scale`, `Founder fit/continuity`, `On hold`

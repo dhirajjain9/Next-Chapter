@@ -163,7 +163,6 @@
   <div class="head-inner">
     <div class="brand">
       <div class="mark">The Next Chapter<span class="dot">.</span></div>
-      <div class="sub">Acquisition Pipeline</div>
     </div>
     <div class="meta">
       <div><b id="m-total">—</b> screened · <b id="m-live">—</b> live</div>
@@ -175,7 +174,7 @@
 
 <div class="wrap">
   <div class="tabs" id="tabs" role="tablist">
-    <button class="tab" role="tab" data-view="live" aria-selected="true">Live pipeline<span class="c" id="t-live"></span></button>
+    <button class="tab" role="tab" data-view="live" aria-selected="true">Funnel<span class="c" id="t-live"></span></button>
     <button class="tab" role="tab" data-view="universe" aria-selected="false">Full universe<span class="c" id="t-uni"></span></button>
     <button class="tab" role="tab" data-view="candidates" aria-selected="false">Suggestions by Claude<span class="c" id="t-cand"></span></button>
   </div>
@@ -226,21 +225,26 @@
   var DATA = JSON.parse(document.getElementById("data").textContent);
   var UNI = DATA.universe, CAND = DATA.candidates;
   var UPDATED = "29 Jun 2026";
-  // Blank/uncategorized statuses count as actionable Pipeline (same as To-Contact)
-  UNI.forEach(function(r){ if(!r.s || r.s==="Uncategorized") r.s="To-Contact"; });
+  // Blank/uncategorized statuses count as actionable Pipeline; "on hold" becomes its own stage
+  UNI.forEach(function(r){
+    if(!r.s || r.s==="Uncategorized") r.s="To-Contact";
+    if(/on.?hold/i.test(r.rr||"")) r.s="On-Hold";
+  });
 
   // ---- stage config ----
+  // Lifecycle: Suggestions → Pipeline → Reached out → In conversation → On hold / Rejected → Onboarded
   var STAGES = [
-    {k:"Onboarded",       lbl:"Onboarded",   cls:"s-onboarded", col:"var(--accent)"},
-    {k:"In-Conversation", lbl:"In conv.",    cls:"s-inconv",    col:"var(--brass)"},
-    {k:"To-Contact",      lbl:"Pipeline",    cls:"s-tocontact", col:"var(--slate)"},
-    {k:"Reached-NoResponse",lbl:"Reached",   cls:"s-reached",   col:"#9aa29a"},
-    {k:"Rejected-Promoter",lbl:"Promoter no",cls:"s-rejected",  col:"var(--brick)"},
-    {k:"Rejected-CH",     lbl:"CH passed",   cls:"s-rejected",  col:"#b8786c"},
-    {k:"Screened-Out",    lbl:"Screened out",cls:"s-screened",  col:"#c2c6bd"}
+    {k:"To-Contact",        lbl:"Pipeline",          cls:"s-tocontact", col:"var(--slate)"},
+    {k:"Reached-NoResponse",lbl:"Reached out",       cls:"s-reached",   col:"#9aa29a"},
+    {k:"In-Conversation",   lbl:"In conversation",   cls:"s-inconv",    col:"var(--brass)"},
+    {k:"On-Hold",           lbl:"On hold",           cls:"s-inconv",    col:"#c89b54"},
+    {k:"Rejected-CH",       lbl:"CH rejected",       cls:"s-rejected",  col:"#b8786c"},
+    {k:"Rejected-Promoter", lbl:"Promoter rejected", cls:"s-rejected",  col:"var(--brick)"},
+    {k:"Onboarded",         lbl:"Onboarded",         cls:"s-onboarded", col:"var(--accent)"},
+    {k:"Screened-Out",      lbl:"Screened out",      cls:"s-screened",  col:"#c2c6bd"}
   ];
   var SMAP={}; STAGES.forEach(function(s){SMAP[s.k]=s;});
-  var LIVE=["Onboarded","In-Conversation","To-Contact","Reached-NoResponse"];
+  var LIVE=["To-Contact","Reached-NoResponse","In-Conversation","On-Hold","Onboarded"];
 
   var PILLARS=[
     {k:"Kitchen",col:"#B0623B"},
@@ -274,6 +278,13 @@
 
   // ---- funnel strip ----
   var funnelEl=document.getElementById("funnel");
+  (function(){
+    var b=document.createElement("button");
+    b.className="stat"; b.style.borderColor="var(--brass)";
+    b.innerHTML='<span class="num tnum">'+CAND.length+'</span><span class="lab">Suggestions</span><span class="stripe" style="background:var(--brass)"></span>';
+    b.addEventListener("click",function(){setView("candidates");window.scrollTo({top:document.querySelector(".controls").offsetTop-70,behavior:"smooth"});});
+    funnelEl.appendChild(b);
+  })();
   STAGES.forEach(function(s){
     var n=stageCounts[s.k]||0; if(!n) return;
     var b=document.createElement("button");
@@ -295,7 +306,7 @@
     pillarEl.innerHTML="";
     var all=document.createElement("button");
     all.className="chip"; all.setAttribute("aria-pressed", pillar===null);
-    all.textContent="All pillars";
+    all.textContent="All categories";
     all.addEventListener("click",function(){pillar=null;buildPillars();render();});
     pillarEl.appendChild(all);
     PILLARS.forEach(function(p){
