@@ -65,7 +65,7 @@ async function runOpenAI(company: string): Promise<string> {
     model: process.env.OPENAI_MODEL || "gpt-4o",
     instructions: SYSTEM,
     input: USER_PROMPT(company),
-    tools: [{ type: "web_search" }],
+    tools: [{ type: "web_search_preview" }],
   } as any);
   if (typeof resp.output_text === "string" && resp.output_text.trim()) {
     return resp.output_text;
