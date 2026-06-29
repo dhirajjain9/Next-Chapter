@@ -37,13 +37,22 @@ Single source of truth: **`data/ch_universe.csv`** (column `stage`).
 `scripts/build_views.py` regenerates `PIPELINE.md` from it.
 
 ```
- SOURCED                                                          ┌─► On hold ─┐
- (Suggestions by Claude /                                         │            │
-  ingested / self-researched)  ─►  Pipeline ─►  Not responding ─►  In conversation ─►  Onboarded
-                                                                 │            │
-                                                                 ├─► Rejected (CH) 
+ SOURCED                          PROSPECTS                       ┌─► On hold ─┐
+ (Suggestions by Claude /   ─►    (searched + Claude-     ─►      │            │
+  ingested / self-researched)      researched, you liked)        │   team triage
+                                                                 ▼            │
+                                   Pipeline ─► Not responding ─► In conversation ─► Onboarded
+                                      ▲                          │            │
+                          (team accepts a prospect)              ├─► Rejected (CH)
                                                                  └─► Rejected (Promoter)
 ```
+
+### Prospects — the daily add loop
+A lightweight holding bay (`data/prospects.csv`) for companies you find ad-hoc, outside the universe and suggestions:
+1. **You search** a company (e.g. in the app). If it isn't already tracked, ask Claude to **research basic details** (entity, founders, funding, independence, revenue signal, fit).
+2. **If you like it**, Claude adds it to **Prospects**.
+3. **End of day**, the team triages each prospect → either **rejected**, or **accepted into Pipeline** at the right stage.
+4. On acceptance, the company **moves into `data/ch_universe.csv`** (stage `To-Contact`) and is **flushed from Prospects**; rejected ones are dropped (or logged).
 
 | Stage | Meaning | Moves forward when |
 |-------|---------|--------------------|
