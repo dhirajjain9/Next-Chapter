@@ -27,7 +27,7 @@ export const MARKUP = `
   <div class="resbar"><div><b id="count">0</b> <span id="count-lbl">companies</span></div><div class="sortnote" id="sortnote"></div></div>
   <div class="list" id="list"></div>
   <button class="more" id="more" style="display:none">Show more</button>
-  <div class="foot"><b>Hard filters:</b> profitable · bootstrapped · founder-led · independent. Search any company; if it isn't tracked, Claude researches it live and you add it as a <b>Prospect</b>. The team then moves prospects into Pipeline or rejects them. Reference deal: Hokipo.</div>
+  <div class="foot"><b>Hard filters:</b> profitable · bootstrapped · founder-led · independent. Search any company; if it isn't tracked, it's researched live and you add it as a <b>Prospect</b>. The team then moves prospects into Pipeline or rejects them. Reference deal: Hokipo.</div>
 </div>
 <div class="ov" id="ov" role="dialog" aria-modal="true" aria-labelledby="sh-name">
   <div class="sheet" id="sheet">

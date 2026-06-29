@@ -240,8 +240,8 @@ function render() {
       msg =
         `<div class="big">No match for &ldquo;${esc(q)}&rdquo;</div>` +
         `<div>Not in the universe, suggestions, or prospects yet.</div>` +
-        `<div class="cta">🔎 Have Claude research <b>${esc(q)}</b> against the 4 hard filters and add it as a prospect.` +
-        `<button id="research-btn"${researching ? " disabled" : ""}>${researching ? '<span class="spin"></span>Researching…' : "Research with Claude"}</button></div>`;
+        `<div class="cta">🔎 Research <b>${esc(q)}</b> against the 4 hard filters and add it as a prospect.` +
+        `<button id="research-btn"${researching ? " disabled" : ""}>${researching ? '<span class="spin"></span>Researching…' : "Research this company"}</button></div>`;
     } else if (view === "prospects") {
       msg = `<div class="big">No prospects yet</div><div>Search a company above. If it isn&rsquo;t tracked, research it — the ones you like land here, then the team moves them into Pipeline.</div>`;
     } else {

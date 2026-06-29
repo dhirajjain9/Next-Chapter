@@ -1,7 +1,7 @@
-// Live company research via the Claude API with the web search server tool.
-// Returns a Prospect-shaped profile assessed against Chapter Home's 4 hard filters.
+// Live company research with web search, assessed against Chapter Home's 4 hard
+// filters. Provider-flexible: uses OpenAI when OPENAI_KEY is set, otherwise
+// falls back to the Anthropic API when ANTHROPIC_API_KEY is set.
 
-import Anthropic from "@anthropic-ai/sdk";
 import type { Prospect } from "./types";
 
 const PILLARS = [
@@ -33,6 +33,9 @@ When done researching, output ONLY a single JSON object (no prose, no markdown f
  "note": one-line analyst takeaway incl. the key risk/gap
 }`;
 
+const USER_PROMPT = (company: string) =>
+  `Research this company and return the JSON profile: ${company}`;
+
 function extractJson(text: string): Record<string, unknown> | null {
   // Find the last balanced {...} object in the text.
   const end = text.lastIndexOf("}");
@@ -54,19 +57,39 @@ function extractJson(text: string): Record<string, unknown> | null {
   return null;
 }
 
-export async function researchCompany(company: string): Promise<Prospect> {
+// --- OpenAI provider (Responses API + web_search tool) ---------------------
+async function runOpenAI(company: string): Promise<string> {
+  const { default: OpenAI } = await import("openai");
+  const client = new OpenAI({ apiKey: process.env.OPENAI_KEY });
+  const resp: any = await client.responses.create({
+    model: process.env.OPENAI_MODEL || "gpt-4o",
+    instructions: SYSTEM,
+    input: USER_PROMPT(company),
+    tools: [{ type: "web_search" }],
+  } as any);
+  if (typeof resp.output_text === "string" && resp.output_text.trim()) {
+    return resp.output_text;
+  }
+  // Fallback: concatenate any text fragments from the structured output.
+  const parts: string[] = [];
+  for (const item of resp.output ?? []) {
+    for (const c of item.content ?? []) {
+      if (typeof c.text === "string") parts.push(c.text);
+    }
+  }
+  return parts.join("\n");
+}
+
+// --- Anthropic provider (web_search server tool) ---------------------------
+async function runAnthropic(company: string): Promise<string> {
+  const { default: Anthropic } = await import("@anthropic-ai/sdk");
   const client = new Anthropic();
-  const messages: Anthropic.MessageParam[] = [
-    { role: "user", content: `Research this company and return the JSON profile: ${company}` },
-  ];
+  const messages: any[] = [{ role: "user", content: USER_PROMPT(company) }];
 
   let text = "";
   // Server-tool loop: web search runs server-side; resume on pause_turn.
-  // Tuned to finish inside Vercel Hobby's 60s function cap: low effort, capped
-  // search rounds, compact output, at most one resume.
+  // Tuned to finish inside Vercel Hobby's 60s function cap.
   for (let i = 0; i < 2; i++) {
-    // Extra fields (output_config, web-search max_uses) aren't in this SDK
-    // version's types yet, so build the request loosely.
     const params: any = {
       model: "claude-opus-4-8",
       max_tokens: 2500,
@@ -75,9 +98,9 @@ export async function researchCompany(company: string): Promise<Prospect> {
       tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 5 }],
       messages,
     };
-    const resp = (await client.messages.create(params)) as Anthropic.Message;
-    text = resp.content
-      .filter((b): b is Anthropic.TextBlock => b.type === "text")
+    const resp: any = await client.messages.create(params);
+    text = (resp.content as any[])
+      .filter((b) => b.type === "text")
       .map((b) => b.text)
       .join("\n");
     if (resp.stop_reason === "pause_turn") {
@@ -86,6 +109,23 @@ export async function researchCompany(company: string): Promise<Prospect> {
     }
     break;
   }
+  return text;
+}
+
+export function researchProvider(): "openai" | "anthropic" | null {
+  if (process.env.OPENAI_KEY) return "openai";
+  if (process.env.ANTHROPIC_API_KEY) return "anthropic";
+  return null;
+}
+
+export async function researchCompany(company: string): Promise<Prospect> {
+  const provider = researchProvider();
+  const text =
+    provider === "openai"
+      ? await runOpenAI(company)
+      : provider === "anthropic"
+        ? await runAnthropic(company)
+        : "";
 
   const parsed = extractJson(text) || {};
   const s = (k: string, d = "unknown") =>

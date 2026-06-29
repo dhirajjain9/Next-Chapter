@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { researchCompany } from "@/lib/research";
+import { researchCompany, researchProvider } from "@/lib/research";
 
 export const runtime = "nodejs";
 export const maxDuration = 60; // Vercel Hobby cap; research route is tuned to fit
 
 export async function POST(req: NextRequest) {
-  if (!process.env.ANTHROPIC_API_KEY) {
+  if (!researchProvider()) {
     return NextResponse.json(
-      { error: "ANTHROPIC_API_KEY is not configured on the server." },
+      { error: "No research key configured. Set OPENAI_KEY on the server." },
       { status: 503 },
     );
   }
