@@ -1,6 +1,18 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="10" fill="#f4efe6"/>
-  <text x="32" y="33" text-anchor="middle" dominant-baseline="central"
-        font-family="Georgia, 'Times New Roman', serif" font-weight="700"
-        font-size="38" letter-spacing="-2" fill="#6e2433">CH</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 100 100">
+  <rect width="100" height="100" rx="16" fill="#f4efe6"/>
+  <g fill="#6e2a35">
+    <!-- C: open serif ring, opening to the right -->
+    <path d="M49.5 38 A22 22 0 1 0 49.5 62" fill="none" stroke="#6e2a35" stroke-width="10"/>
+    <!-- H: two serifed stems -->
+    <rect x="54" y="26" width="8" height="48"/>
+    <rect x="78" y="26" width="8" height="48"/>
+    <!-- H crossbar with the signature extension tapering off to the right -->
+    <rect x="54" y="46" width="32" height="8"/>
+    <path d="M86 46 L97 50 L86 54 Z"/>
+    <!-- bracketed serif feet -->
+    <rect x="50" y="26" width="16" height="4"/>
+    <rect x="50" y="70" width="16" height="4"/>
+    <rect x="74" y="26" width="16" height="4"/>
+    <rect x="74" y="70" width="16" height="4"/>
+  </g>
 </svg>
