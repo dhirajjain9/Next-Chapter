@@ -39,7 +39,7 @@ Single source of truth: **`data/ch_universe.csv`** (column `stage`).
 ```
  SOURCED                                                          ┌─► On hold ─┐
  (Suggestions by Claude /                                         │            │
-  ingested / self-researched)  ─►  Pipeline ─►  Reached out ─►  In conversation ─►  Onboarded
+  ingested / self-researched)  ─►  Pipeline ─►  Not responding ─►  In conversation ─►  Onboarded
                                                                  │            │
                                                                  ├─► Rejected (CH) 
                                                                  └─► Rejected (Promoter)
@@ -48,8 +48,8 @@ Single source of truth: **`data/ch_universe.csv`** (column `stage`).
 | Stage | Meaning | Moves forward when |
 |-------|---------|--------------------|
 | **Sourced** | A new lead — a Claude suggestion (`data/candidates_new.csv`), an ingested dataset, or self-researched | Passes the 4 gates + worth pursuing → Pipeline |
-| `To-Contact` → **Pipeline** | Shortlisted, outreach not yet done (blank statuses also count here) | First contact made → Reached out |
-| `Reached-NoResponse` → **Reached out** | Outreach sent, awaiting reply | Reply received → In conversation |
+| `To-Contact` → **Pipeline** | Shortlisted, outreach not yet done (blank statuses also count here) | First contact made → Not responding |
+| `Reached-NoResponse` → **Not responding** | Outreach sent, no reply yet | Reply received → In conversation |
 | `In-Conversation` | Active two-way dialogue | LOI / onboard, on-hold, or rejection |
 | `On-Hold` | Paused — revisit later | Resume → In conversation, or → Rejected |
 | `Onboarded` | Acquired / integrated | — (success terminal) |
